@@ -36,20 +36,20 @@ def sample_xts_from_x0(model, x0, num_inference_steps=50):
     # torch.manual_seed(43256465436)
     alpha_bar = model.scheduler.alphas_cumprod
     sqrt_one_minus_alpha_bar = (1-alpha_bar) ** 0.5
-    alphas = model.scheduler.alphas
-    betas = 1 - alphas
-    variance_noise_shape = (
-            num_inference_steps,
-            model.unet.in_channels, 
-            model.unet.sample_size,
-            model.unet.sample_size)
+    # alphas = model.scheduler.alphas
+    # betas = 1 - alphas
+    # variance_noise_shape = (
+    #         num_inference_steps,
+    #         model.unet.in_channels,
+    #         model.unet.sample_size,
+    #         model.unet.sample_size)
     
     timesteps = model.scheduler.timesteps.to(model.device)
     t_to_idx = {int(v):k for k,v in enumerate(timesteps)}
     xts = torch.zeros((num_inference_steps+1,model.unet.in_channels, model.unet.sample_size, model.unet.sample_size)).to(x0.device)
     xts[0] = x0
-    for t in reversed(timesteps):
-        idx = num_inference_steps-t_to_idx[int(t)]
+    for t in reversed(timesteps): # [1,11,21,31,...981,991]
+        idx = num_inference_steps-t_to_idx[int(t)] # 1:1,2:11,3:21...
         xts[idx] = x0 * (alpha_bar[t] ** 0.5) +  torch.randn_like(x0) * sqrt_one_minus_alpha_bar[t]
 
 
@@ -104,13 +104,14 @@ def inversion_forward_process(model, x0,
                             prompt = "",
                             cfg_scale = 3.5,
                             num_inference_steps=50, eps = None):
-
-    if not prompt=="":
-        text_embeddings = encode_text(model, prompt)
-    uncond_embedding = encode_text(model, "")
+    print(f"inversion forward process....")
+    if not prompt=="": # if source prompt is not None
+        text_embeddings = encode_text(model, prompt) # conditional embedding
+    uncond_embedding = encode_text(model, "") # unconditional embedding
     timesteps = model.scheduler.timesteps.to(model.device)
+    # timesteps: [991,981,971,...31,21,11,1]
     variance_noise_shape = (
-        num_inference_steps,
+        num_inference_steps, # equals to num_diffusion_steps = 100
         model.unet.in_channels, 
         model.unet.sample_size,
         model.unet.sample_size)
@@ -118,9 +119,11 @@ def inversion_forward_process(model, x0,
         eta_is_zero = True
         zs = None
     else:
-        eta_is_zero = False
+        eta_is_zero = False # eta==1 in default -> DDPM
         if type(etas) in [int, float]: etas = [etas]*model.scheduler.num_inference_steps
+        # perform forward process
         xts = sample_xts_from_x0(model, x0, num_inference_steps=num_inference_steps)
+        # the length of xts is 101: x0 + 100*noising operations
         alpha_bar = model.scheduler.alphas_cumprod
         zs = torch.zeros(size=variance_noise_shape, device=model.device)
     t_to_idx = {int(v):k for k,v in enumerate(timesteps)}
@@ -173,8 +176,7 @@ def inversion_forward_process(model, x0,
             xts[idx] = xtm1
 
     if not zs is None: 
-        zs[0] = torch.zeros_like(zs[0]) 
-
+        zs[0] = torch.zeros_like(zs[0])
     return xt, zs, xts
 
 
