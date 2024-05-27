@@ -103,6 +103,8 @@ if __name__ == "__main__":
                         # reverse process (via Zs and wT)
                         controller = AttentionStore()
                         register_attention_control(ldm_stable, controller)
+                        # xT = wts[args.num_diffusion_steps - skip] = wts[100-36] = wts[64]
+                        # zs = zs[:(args.num_diffusion_steps - skip)] = zs[:64]
                         w0, _ = inversion_reverse_process(ldm_stable, xT=wts[args.num_diffusion_steps - skip], etas=eta,
                                                           prompts=[prompt_tar], cfg_scales=[cfg_scale_tar],
                                                           prog_bar=True, zs=zs[:(args.num_diffusion_steps - skip)],
