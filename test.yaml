@@ -1,7 +1,7 @@
 - #init_img:  /example_images/horse_mud.jpg
   init_img: /example_images/00004.jpeg
   #source_prompt: a photo of a horse in the mud
-  prompt: sunny-day,car,bus,van,minibike,building,streetlight,sky,tree,road,sidewalk,person,signboard,traffic,plant,fence, The image depicts a busy city street with multiple cars driving down the road. The street is lined with trees, adding a touch of greenery to the urban environment.
+  source_prompt: sunny-day,car,bus,van,minibike,building,streetlight,sky,tree,road,sidewalk,person,signboard,traffic,plant,fence, The image depicts a busy city street with multiple cars driving down the road. The street is lined with trees, adding a touch of greenery to the urban environment.
 
 
   target_prompts:

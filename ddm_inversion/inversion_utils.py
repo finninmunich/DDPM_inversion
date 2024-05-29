@@ -115,8 +115,8 @@ def inversion_forward_process(model, x0,
                               num_inference_steps=50, eps=None):
     print(f"inversion forward process....")
     if not prompt == "":  # if source prompt is not None
-        text_embeddings = encode_text(model, prompt)  # conditional embedding
-    uncond_embedding = encode_text(model, "")  # unconditional embedding
+        text_embeddings = encode_text(model, prompt)  # conditional embedding -> (1,77,768)
+    uncond_embedding = encode_text(model, "")  # unconditional embedding -> (1,77,768)
     timesteps = model.scheduler.timesteps.to(model.device)
     # timesteps: [991,981,971,...31,21,11,1]
     variance_noise_shape = (
